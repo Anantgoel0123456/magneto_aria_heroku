@@ -8,7 +8,7 @@ from sys import executable
 import time
 from telegram import ParseMode
 from telegram.ext import CommandHandler, run_async
-from bot import dispatcher, updater, botStartTime
+from bot import dispatcher, updater, botStartTime, IMAGE_URL
 from bot.helper.ext_utils import fs_utils
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.message_utils import *
@@ -29,26 +29,42 @@ def stats(update, context):
     cpuUsage = psutil.cpu_percent(interval=0.5)
     memory = psutil.virtual_memory().percent
     disk = psutil.disk_usage('/').percent
-    stats = f'<b>Bot Uptime:</b> {currentTime}\n' \
-            f'<b>Total disk space:</b> {total}\n' \
-            f'<b>Used:</b> {used}  ' \
-            f'<b>Free:</b> {free}\n\n' \
-            f'📊Data Usage📊\n<b>Upload:</b> {sent}\n' \
-            f'<b>Down:</b> {recv}\n\n' \
-            f'<b>CPU:</b> {cpuUsage}%\n' \
-            f'<b>RAM:</b> {memory}%\n' \
-            f'<b>Disk:</b> {disk}%'
+    stats = f'<b>╭─────────「  ⭕️ BOT STATISTICS ⭕️  」</b>\n' \
+            f'<b>│</b>\n' \
+            f'<b>├  ⏰ Bot Uptime : {currentTime}</b>\n' \
+            f'<b>├  💾 Total Disk Space : {total}</b>\n' \
+            f'<b>├  📀 Total Used Space : {used}</b>\n' \
+            f'<b>├  💿 Total Free Space : {free}</b>\n' \
+            f'<b>├  🔼 Total Upload : {sent}</b>\n' \
+            f'<b>├  🔽 Total Download : {recv}</b>\n' \
+            f'<b>├  🖥️ CPU : {cpuUsage}%</b>\n' \
+            f'<b>├  🎮 RAM : {memory}%</b>\n' \
+            f'<b>├  💽 DISK : {disk}%</b>\n' \
+            f'<b>│</b>\n' \
+            f'<b>╰──「 🚸 Developed By Anant Goel 🚸 」</b>'
+    update.effective_message.reply_photo(IMAGE_URL, stats, parse_mode=ParseMode.HTML)
     sendMessage(stats, context.bot, update)
 
 
 @run_async
 def start(update, context):
     start_string = f'''
-Hi {update.message.chat.first_name}, This bot can mirror all your links to Google drive!
+This bot can mirror all your links to Google Drive!
 Type /{BotCommands.HelpCommand} to get a list of available commands
 '''
-    update.effective_message.reply_photo("https://telegra.ph/file/511f10824f13e639703e1.jpg", start_string, parse_mode=ParseMode.MARKDOWN)
-
+    buttons = button_build.ButtonMaker()
+    buttons.buildbutton("Repo", "https://github.com/ayushteke/slam_aria_mirror_bot_HEROKU")
+    buttons.buildbutton("Support Group", "https://t.me/Anant_Goel")
+    reply_markup = InlineKeyboardMarkup(buttons.build_menu(2))
+    LOGGER.info('UID: {} - UN: {} - MSG: {}'.format(update.message.chat.id, update.message.chat.username, update.message.text))
+    uptime = get_readable_time((time.time() - botStartTime))
+    if CustomFilters.authorized_user(update) or CustomFilters.authorized_chat(update):
+        if update.message.chat.type == "private" :
+            sendMessage(f"Hey I'm Alive 🙂\nSince: <code>{uptime}</code>", context.bot, update)
+        else :
+            update.effective_message.reply_photo(IMAGE_URL, start_string, parse_mode=ParseMode.MARKDOWN, reply_markup=reply_markup)
+    else :
+        sendMessage(f"I hate Strangers using me.By the way u are not authorize me to use.", context.bot, update)
 
 @run_async
 def repo(update, context):
