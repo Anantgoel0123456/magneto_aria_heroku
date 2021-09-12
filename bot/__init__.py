@@ -223,6 +223,12 @@ try:
 except KeyError:
     SHORTENER = None
     SHORTENER_API = None
+try:
+    IMAGE_URL = getConfig('IMAGE_URL')
+    if len(IMAGE_URL) == 0:
+        IMAGE_URL = 'https://telegra.ph/file/019996f816db9ed576cff.jpg'
+except KeyError:
+    IMAGE_URL = 'https://telegra.ph/file/019996f816db9ed576cff.jpg'
 
 updater = tg.Updater(token=BOT_TOKEN,use_context=True)
 bot = updater.bot
