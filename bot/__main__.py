@@ -16,8 +16,8 @@ from .helper.ext_utils.bot_utils import get_readable_file_size, get_readable_tim
 from .helper.telegram_helper.filters import CustomFilters
 from .modules import authorize, list, cancel_mirror, mirror_status, mirror, clone, watch, shell, eval, anime, stickers, search, delete, speedtest, usage
 
+now=datetime.now(pytz.timezone('Asia/Jakarta'))
 
-@run_async
 def stats(update, context):
     currentTime = get_readable_time((time.time() - botStartTime))
     total, used, free = shutil.disk_usage('.')
