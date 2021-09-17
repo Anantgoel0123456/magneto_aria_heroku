@@ -6,7 +6,7 @@ from bot import app
 from os import execl, kill, path, remove
 from sys import executable
 import time
-from telegram import ParseMode
+from telegram import ParseMode, BotCommands
 from telegram.ext import CommandHandler, run_async
 from bot import dispatcher, updater, botStartTime, IMAGE_URL
 from bot.helper.ext_utils import fs_utils
