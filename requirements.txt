@@ -22,3 +22,4 @@ speedtest-cli>=2.1.2
 messages
 lxml
 telegraph
+telegram
