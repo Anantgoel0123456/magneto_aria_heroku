@@ -22,3 +22,11 @@ speedtest-cli>=2.1.2
 messages
 lxml
 telegraph
+psycopg2-binary
+html-telegraph-poster
+js2py
+lk21
+feedparser
+gitpython
+aiohttp
+appdirs
