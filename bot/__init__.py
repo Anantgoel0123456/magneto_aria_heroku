@@ -281,6 +281,38 @@ try:
         IMAGE_URL = 'https://telegra.ph/file/019996f816db9ed576cff.jpg'
 except KeyError:
     IMAGE_URL = 'https://telegra.ph/file/019996f816db9ed576cff.jpg'
+try:
+    STOP_DUPLICATE_MIRROR = getConfig('STOP_DUPLICATE_MIRROR')
+    if STOP_DUPLICATE_MIRROR.lower() == 'true':
+        STOP_DUPLICATE_MIRROR = True
+    else:
+        STOP_DUPLICATE_MIRROR = False
+except KeyError:
+    STOP_DUPLICATE_MIRROR = False
+try:
+    STOP_DUPLICATE_MEGA = getConfig('STOP_DUPLICATE_MEGA')
+    if STOP_DUPLICATE_MEGA.lower() == 'true':
+        STOP_DUPLICATE_MEGA = True
+    else:
+        STOP_DUPLICATE_MEGA = False
+except KeyError:
+    STOP_DUPLICATE_MEGA = False
+try:
+    VIEW_LINK = getConfig('VIEW_LINK')
+    if VIEW_LINK.lower() == 'true':
+        VIEW_LINK = True
+    else:
+        VIEW_LINK = False
+except KeyError:
+    VIEW_LINK = False
+try:
+    STOP_DUPLICATE_CLONE = getConfig('STOP_DUPLICATE_CLONE')
+    if STOP_DUPLICATE_CLONE.lower() == 'true':
+        STOP_DUPLICATE_CLONE = True
+    else:
+        STOP_DUPLICATE_CLONE = False
+except KeyError:
+    STOP_DUPLICATE_CLONE = False    
 
 updater = tg.Updater(token=BOT_TOKEN,use_context=True)
 bot = updater.bot
