@@ -189,30 +189,25 @@ def main():
         os.remove(".restartmsg")
     bot.set_my_commands(botcmds)
 
-    start_handler = CommandHandler(BotCommands.StartCommand, start,
-                                   filters=CustomFilters.authorized_chat | CustomFilters.authorized_user)
+    start_handler = CommandHandler(BotCommands.StartCommand, start,)
     ping_handler = CommandHandler(BotCommands.PingCommand, ping,
-                                  filters=CustomFilters.authorized_chat | CustomFilters.authorized_user)
+                                  filters=CustomFilters.authorized_chat | CustomFilters.authorized_user,)
     restart_handler = CommandHandler(BotCommands.RestartCommand, restart,
-                                     filters=CustomFilters.owner_filter)
+                                     filters=CustomFilters.owner_filter | CustomFilters.sudo_user,)
     help_handler = CommandHandler(BotCommands.HelpCommand,
-                                  bot_help, filters=CustomFilters.authorized_chat | CustomFilters.authorized_user)
+                                  bot_help, filters=CustomFilters.authorized_chat | CustomFilters.authorized_user,)
     stats_handler = CommandHandler(BotCommands.StatsCommand,
-                                   stats, filters=CustomFilters.authorized_chat | CustomFilters.authorized_user)
-    log_handler = CommandHandler(BotCommands.LogCommand, log, filters=CustomFilters.owner_filter)
-    repo_handler = CommandHandler(BotCommands.RepoCommand, repo,
-                                   filters=CustomFilters.authorized_chat | CustomFilters.authorized_user)
+                                   stats, filters=CustomFilters.authorized_chat | CustomFilters.authorized_user,)
+    log_handler = CommandHandler(BotCommands.LogCommand, log, filters=CustomFilters.owner_filter | CustomFilters.sudo_user,)
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(ping_handler)
     dispatcher.add_handler(restart_handler)
     dispatcher.add_handler(help_handler)
     dispatcher.add_handler(stats_handler)
     dispatcher.add_handler(log_handler)
-    dispatcher.add_handler(repo_handler)
-    updater.start_polling()
+    updater.start_polling(drop_pending_updates=IGNORE_PENDING_REQUESTS)
     LOGGER.info("Bot Started!")
     signal.signal(signal.SIGINT, fs_utils.exit_clean_up)
-
 app.start()
 main()
 idle()
