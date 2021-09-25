@@ -228,6 +228,14 @@ except KeyError:
     BUTTON_FIVE_NAME = None
     BUTTON_FIVE_URL = None
 try:
+    BUTTON_SIX_NAME = getConfig('BUTTON_SIX_NAME')
+    BUTTON_SIX_URL = getConfig('BUTTON_SIX_URL')
+    if len(BUTTON_SIX_NAME) == 0 or len(BUTTON_SIX_URL) == 0:
+        raise KeyError
+except KeyError:
+    BUTTON_SIX_NAME = None
+    BUTTON_SIX_URL = None    
+try:
     STOP_DUPLICATE_MIRROR = getConfig('STOP_DUPLICATE_MIRROR')
     if STOP_DUPLICATE_MIRROR.lower() == 'true':
         STOP_DUPLICATE_MIRROR = True
