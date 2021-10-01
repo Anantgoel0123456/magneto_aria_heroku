@@ -1,6 +1,6 @@
 from telegram.ext import BaseFilter
 from telegram import Message
-from bot import AUTHORIZED_CHATS, OWNER_ID, download_dict, download_dict_lock
+from bot import AUTHORIZED_CHATS, SUDO_USERS, OWNER_ID, download_dict, download_dict_lock
 
 
 class CustomFilters:
@@ -23,6 +23,12 @@ class CustomFilters:
 
     authorized_chat = _AuthorizedChat()
 
+    class _SudoUser(BaseFilter):
+        def filter(self,message):
+            return bool(message.from_user.id in SUDO_USERS)
+
+    sudo_user = _SudoUser()
+
     class _MirrorOwner(BaseFilter):
         def filter(self, message: Message):
             user_id = message.from_user.id
@@ -37,6 +43,8 @@ class CustomFilters:
                             return True
                     else:
                         return False
+            if not message.reply_to_message and len(args) == 1:
+                return True
             # Cancelling by replying to original mirror message
             reply_user = message.reply_to_message.from_user.id
             return bool(reply_user == user_id)
