@@ -35,8 +35,38 @@ Interval = []
 def getConfig(name: str):
     return os.environ[name]
 
+def mktable():
+    try:
+        conn = psycopg2.connect(DB_URI)
+        cur = conn.cursor()
+        sql = "CREATE TABLE users (uid bigint, sudo boolean DEFAULT FALSE);"
+        cur.execute(sql)
+        conn.commit()
+        LOGGER.info("Table Created!")
+    except Error as e:
+        LOGGER.error(e)
+        exit(1)
+
+IGNORE_PENDING_REQUESTS = False
+try:
+    if getConfig("IGNORE_PENDING_REQUESTS").lower() == "true":
+        IGNORE_PENDING_REQUESTS = True
+except KeyError:
+    pass
 
 LOGGER = logging.getLogger(__name__)
+
+def mktable():
+    try:
+        conn = psycopg2.connect(DB_URI)
+        cur = conn.cursor()
+        sql = "CREATE TABLE users (uid bigint, sudo boolean DEFAULT FALSE);"
+        cur.execute(sql)
+        conn.commit()
+        LOGGER.info("Table Created!")
+    except Error as e:
+        LOGGER.error(e)
+        exit(1)
 
 try:
     if bool(getConfig('_____REMOVE_THIS_LINE_____')):
@@ -82,6 +112,7 @@ except:
 
 try:
     BOT_TOKEN = getConfig('BOT_TOKEN')
+    DB_URI = getConfig('DATABASE_URL')
     parent_id = getConfig('GDRIVE_FOLDER_ID')
     DOWNLOAD_DIR = getConfig('DOWNLOAD_DIR')
     if DOWNLOAD_DIR[-1] != '/' or DOWNLOAD_DIR[-1] != '\\':
@@ -94,20 +125,63 @@ try:
 except KeyError as e:
     LOGGER.error("One or more env variables missing! Exiting now")
     exit(1)
-#Generate Telegraph Token
-sname = ''.join(random.SystemRandom().choices(string.ascii_letters, k=8))
-LOGGER.info("Generating TELEGRAPH_TOKEN using '" + sname + "' name")
-telegraph = Telegraph()
-telegraph.create_account(short_name=sname)
-telegraph_token = telegraph.get_access_token()
-
 try:
     if os.environ['USE_TELEGRAPH'].upper() == 'TRUE':
         USE_TELEGRAPH = True
     else:
         raise KeyError
 except KeyError:
-    USE_TELEGRAPH = False
+    USE_TELEGRAPH = False   
+
+# Generate USER_SESSION_STRING
+LOGGER.info("Generating USER_SESSION_STRING")
+with Client(':memory:', api_id=int(TELEGRAM_API), api_hash=TELEGRAM_HASH, bot_token=BOT_TOKEN) as app:
+    USER_SESSION_STRING = app.export_session_string()
+
+# Generate TELEGRAPH_TOKEN
+if USE_TELEGRAPH:
+    sname = ''.join(random.SystemRandom().choices(string.ascii_letters, k=8))
+    LOGGER.info("Using Telegra.ph")
+    LOGGER.info("Generating TELEGRAPH_TOKEN")
+    telegraph = Telegraph()
+    telegraph.create_account(short_name=sname)
+    TELEGRAPH_TOKEN = telegraph.get_access_token()
+if not USE_TELEGRAPH:
+    TELEGRAPH_TOKEN = None
+    LOGGER.info("Not Using Telegra.ph")
+    pass
+try:
+    STOP_DUPLICATE_CLONE = getConfig('STOP_DUPLICATE_CLONE')
+    if STOP_DUPLICATE_CLONE.lower() == 'true':
+        STOP_DUPLICATE_CLONE = True
+    else:
+        STOP_DUPLICATE_CLONE = False
+except KeyError:
+    STOP_DUPLICATE_CLONE = False
+try:
+    STOP_DUPLICATE_MIRROR = getConfig('STOP_DUPLICATE_MIRROR')
+    if STOP_DUPLICATE_MIRROR.lower() == 'true':
+        STOP_DUPLICATE_MIRROR = True
+    else:
+        STOP_DUPLICATE_MIRROR = False
+except KeyError:
+    STOP_DUPLICATE_MIRROR = False
+try:
+    STOP_DUPLICATE_MEGA = getConfig('STOP_DUPLICATE_MEGA')
+    if STOP_DUPLICATE_MEGA.lower() == 'true':
+        STOP_DUPLICATE_MEGA = True
+    else:
+        STOP_DUPLICATE_MEGA = False
+except KeyError:
+    STOP_DUPLICATE_MEGA = False
+try:
+    VIEW_LINK = getConfig('VIEW_LINK')
+    if VIEW_LINK.lower() == 'true':
+        VIEW_LINK = True
+    else:
+        VIEW_LINK = False
+except KeyError:
+    VIEW_LINK = False
 try:
     TORRENT_DIRECT_LIMIT = getConfig('TORRENT_DIRECT_LIMIT')
     if len(TORRENT_DIRECT_LIMIT) == 0:
@@ -132,12 +206,6 @@ try:
         TAR_UNZIP_LIMIT = None
 except KeyError:
     TAR_UNZIP_LIMIT = None
-    IGNORE_PENDING_REQUESTS = False
-try:
-    if getConfig("IGNORE_PENDING_REQUESTS").lower() == "true":
-        IGNORE_PENDING_REQUESTS = True
-except KeyError:
-    pass
 try:
     BLOCK_MEGA_FOLDER = getConfig('BLOCK_MEGA_FOLDER')
     if BLOCK_MEGA_FOLDER.lower() == 'true':
@@ -154,25 +222,30 @@ try:
         BLOCK_MEGA_LINKS = False
 except KeyError:
     BLOCK_MEGA_LINKS = False
-    
-
-# Generate USER_SESSION_STRING
-LOGGER.info("Generating USER_SESSION_STRING")
-with Client(':memory:', api_id=int(TELEGRAM_API), api_hash=TELEGRAM_HASH, bot_token=BOT_TOKEN) as app:
-    USER_SESSION_STRING = app.export_session_string()
-
-# Generate TELEGRAPH_TOKEN
-if USE_TELEGRAPH:
-    sname = ''.join(random.SystemRandom().choices(string.ascii_letters, k=8))
-    LOGGER.info("Using Telegra.ph")
-    LOGGER.info("Generating TELEGRAPH_TOKEN")
-    telegraph = Telegraph()
-    telegraph.create_account(short_name=sname)
-    TELEGRAPH_TOKEN = telegraph.get_access_token()
-if not USE_TELEGRAPH:
-    TELEGRAPH_TOKEN = None
-    LOGGER.info("Not Using Telegra.ph")
-    pass
+try:
+    BUTTON_SIX_NAME = getConfig('BUTTON_SIX_NAME')
+    BUTTON_SIX_URL = getConfig('BUTTON_SIX_URL')
+    if len(BUTTON_SIX_NAME) == 0 or len(BUTTON_SIX_URL) == 0:
+        raise KeyError
+except KeyError:
+    BUTTON_SIX_NAME = None
+    BUTTON_SIX_URL = None
+try:
+    BLOCK_MEGA_FOLDER = getConfig('BLOCK_MEGA_FOLDER')
+    if BLOCK_MEGA_FOLDER.lower() == 'true':
+        BLOCK_MEGA_FOLDER = True
+    else:
+        BLOCK_MEGA_FOLDER = False
+except KeyError:
+    BLOCK_MEGA_FOLDER = False
+try:
+    BLOCK_MEGA_LINKS = getConfig('BLOCK_MEGA_LINKS')
+    if BLOCK_MEGA_LINKS.lower() == 'true':
+        BLOCK_MEGA_LINKS = True
+    else:
+        BLOCK_MEGA_LINKS = False
+except KeyError:
+    BLOCK_MEGA_LINKS = False    
 
 try:
     HEROKU_API_KEY = getConfig('HEROKU_API_KEY')
@@ -234,14 +307,6 @@ except KeyError:
     BUTTON_FIVE_NAME = None
     BUTTON_FIVE_URL = None
 try:
-    BUTTON_SIX_NAME = getConfig('BUTTON_SIX_NAME')
-    BUTTON_SIX_URL = getConfig('BUTTON_SIX_URL')
-    if len(BUTTON_SIX_NAME) == 0 or len(BUTTON_SIX_URL) == 0:
-        raise KeyError
-except KeyError:
-    BUTTON_SIX_NAME = None
-    BUTTON_SIX_URL = None    
-try:
     STOP_DUPLICATE_MIRROR = getConfig('STOP_DUPLICATE_MIRROR')
     if STOP_DUPLICATE_MIRROR.lower() == 'true':
         STOP_DUPLICATE_MIRROR = True
@@ -289,44 +354,6 @@ try:
 except KeyError:
     SHORTENER = None
     SHORTENER_API = None
-try:
-    IMAGE_URL = getConfig('IMAGE_URL')
-    if len(IMAGE_URL) == 0:
-        IMAGE_URL = 'https://telegra.ph/file/019996f816db9ed576cff.jpg'
-except KeyError:
-    IMAGE_URL = 'https://telegra.ph/file/019996f816db9ed576cff.jpg'
-try:
-    STOP_DUPLICATE_MIRROR = getConfig('STOP_DUPLICATE_MIRROR')
-    if STOP_DUPLICATE_MIRROR.lower() == 'true':
-        STOP_DUPLICATE_MIRROR = True
-    else:
-        STOP_DUPLICATE_MIRROR = False
-except KeyError:
-    STOP_DUPLICATE_MIRROR = False
-try:
-    STOP_DUPLICATE_MEGA = getConfig('STOP_DUPLICATE_MEGA')
-    if STOP_DUPLICATE_MEGA.lower() == 'true':
-        STOP_DUPLICATE_MEGA = True
-    else:
-        STOP_DUPLICATE_MEGA = False
-except KeyError:
-    STOP_DUPLICATE_MEGA = False
-try:
-    VIEW_LINK = getConfig('VIEW_LINK')
-    if VIEW_LINK.lower() == 'true':
-        VIEW_LINK = True
-    else:
-        VIEW_LINK = False
-except KeyError:
-    VIEW_LINK = False
-try:
-    STOP_DUPLICATE_CLONE = getConfig('STOP_DUPLICATE_CLONE')
-    if STOP_DUPLICATE_CLONE.lower() == 'true':
-        STOP_DUPLICATE_CLONE = True
-    else:
-        STOP_DUPLICATE_CLONE = False
-except KeyError:
-    STOP_DUPLICATE_CLONE = False
 download_dict_lock = threading.Lock()
 status_reply_dict_lock = threading.Lock()
 # Key: update.effective_chat.id
@@ -337,7 +364,20 @@ status_reply_dict = {}
 download_dict = {}
 # Stores list of users and chats the bot is authorized to use in
 AUTHORIZED_CHATS = set()
-SUDO_USERS = set()    
+SUDO_USERS = set()
+#Generate Telegraph Token
+sname = ''.join(random.SystemRandom().choices(string.ascii_letters, k=8))
+LOGGER.info("Generating TELEGRAPH_TOKEN using '" + sname + "' name")
+telegraph = Telegraph()
+telegraph.create_account(short_name=sname)
+telegraph_token = telegraph.get_access_token()
+try:
+    IMAGE_URL = getConfig('IMAGE_URL')
+    if len(IMAGE_URL) == 0:
+        IMAGE_URL = 'https://telegra.ph/file/019996f816db9ed576cff.jpg'
+except KeyError:
+    IMAGE_URL = 'https://telegra.ph/file/019996f816db9ed576cff.jpg'
+    
 try:
     conn = psycopg2.connect(DB_URI)
     cur = conn.cursor()
@@ -356,25 +396,7 @@ except Error as e:
         exit(1)
 finally:
     cur.close()
-    conn.close()
-IGNORE_PENDING_REQUESTS = False
-try:
-    if getConfig("IGNORE_PENDING_REQUESTS").lower() == "true":
-        IGNORE_PENDING_REQUESTS = True
-except KeyError:
-    pass
-def mktable():
-    try:
-        conn = psycopg2.connect(DB_URI)
-        cur = conn.cursor()
-        sql = "CREATE TABLE users (uid bigint, sudo boolean DEFAULT FALSE);"
-        cur.execute(sql)
-        conn.commit()
-        LOGGER.info("Table Created!")
-    except Error as e:
-        LOGGER.error(e)
-        exit(1)
-
+    conn.close()    
 
 updater = tg.Updater(token=BOT_TOKEN,use_context=True)
 bot = updater.bot
